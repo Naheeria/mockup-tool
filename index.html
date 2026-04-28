@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>책 목업 생성기 — Book Mockup Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root {
+    --paper: #f4f1ea;
+    --paper-dark: #e8e3d6;
+    --ink: #1a1814;
+    --ink-soft: #4a453d;
+    --rule: #c9c3b3;
+    --accent: #8b3a2b;
+    --accent-soft: #d4a094;
+    --shadow: rgba(26, 24, 20, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Pretendard', sans-serif;
+    background: var(--paper);
+    background-image:
+      radial-gradient(ellipse at top, rgba(139, 58, 43, 0.04), transparent 50%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1, 0 0 0 0 0.1, 0 0 0 0 0.08, 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .title-block h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .title-block .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+
+  .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  .meta .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* Notice */
+  .notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(139, 58, 43, 0.06);
+    border-left: 2px solid var(--accent);
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .notice-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    line-height: 1.5;
+  }
+
+  .notice-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--accent);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--accent);
+    margin-top: 2px;
+  }
+
+  /* Layout */
+  .workspace {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
+  }
+
+  @media (max-width: 900px) {
+    .workspace { grid-template-columns: 1fr; }
+  }
+
+  /* Control panel */
+  .panel {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    height: fit-content;
+    position: sticky;
+    top: 24px;
+  }
+
+  .panel-section {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px dashed var(--rule);
+  }
+
+  .panel-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* File upload */
+  .upload-group {
+    margin-bottom: 12px;
+  }
+
+  .upload-group:last-child { margin-bottom: 0; }
+
+  .upload-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .upload-input {
+    position: relative;
+    border: 1px dashed var(--rule);
+    background: var(--paper);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .upload-input:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .upload-input.has-file {
+    border-style: solid;
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(139, 58, 43, 0.04);
+  }
+
+  .upload-input input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .hint-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Form controls */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .radio-group, .check-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .radio-btn, .check-btn {
+    flex: 1;
+    min-width: fit-content;
+    padding: 8px 10px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    cursor: pointer;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .radio-btn:hover, .check-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .radio-btn.active, .check-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .number-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .number-input input[type="number"] {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  .number-input input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .number-input .unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  .range-input {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 2px;
+    background: var(--rule);
+    outline: none;
+  }
+
+  .range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    cursor: pointer;
+    border-radius: 50%;
+  }
+
+  .range-input::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+  }
+
+  .color-swatch-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .color-swatch {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.15s;
+  }
+
+  .color-swatch:hover { transform: scale(1.1); }
+  .color-swatch.active {
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--ink);
+  }
+
+  .color-picker {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    padding: 0;
+    background: none;
+  }
+
+  .custom-color-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .color-picker-large {
+    width: 44px;
+    height: 36px;
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    padding: 2px;
+    background: var(--paper);
+    flex-shrink: 0;
+  }
+
+  .hex-input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .hex-input:focus { outline: none; border-color: var(--accent); }
+
+  .text-input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    font-family: 'Pretendard', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  .text-input:focus { outline: none; border-color: var(--accent); }
+
+  .text-input::placeholder { color: var(--rule); }
+
+  .text-area {
+    resize: vertical;
+    min-height: 60px;
+    font-family: 'Pretendard', sans-serif;
+    line-height: 1.5;
+  }
+
+  .field-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    letter-spacing: 0;
+    text-transform: none;
+    margin-left: 4px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  .btn:hover {
+    background: var(--accent);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Capture hint */
+  .capture-hint {
+    background: rgba(139, 58, 43, 0.04);
+    border: 1px dashed var(--rule);
+    padding: 14px;
+  }
+
+  .capture-hint-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .capture-hint-label::before {
+    content: '⌘';
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-style: italic;
+  }
+
+  .capture-hint-text {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .capture-hint-text strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* Preview area */
+  .preview-area {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--rule);
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .preview-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+
+  .tab-btn:hover { color: var(--ink); }
+
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .preview-canvas {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 60px;
+    position: relative;
+    overflow: hidden;
+    min-height: 700px;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--ink-soft);
+  }
+
+  .empty-state .icon {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 80px;
+    font-style: italic;
+    color: var(--rule);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .empty-state .text {
+    font-size: 14px;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .empty-state .hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 12px;
+    color: var(--rule);
+  }
+
+  /* The actual book mockup */
+  .stage-wrap {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 56px;
+  }
+
+  .stage-wrap.active { display: flex; }
+
+  #mockup-stage {
+    position: relative;
+  }
+
+  .caption-block {
+    text-align: center;
+    max-width: 480px;
+    display: none;
+    padding: 0 16px;
+  }
+
+  .caption-block.active { display: block; }
+
+  .caption-title {
+    color: var(--ink);
+    line-height: 1.4;
+    font-size: 22px;
+  }
+
+  .caption-title.font-serif-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  .caption-title.font-serif-kr {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .caption-title.font-sans-kr {
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .caption-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    margin-top: 14px;
+  }
+
+  /* 3D book container */
+  .book-3d {
+    perspective: 2200px;
+    perspective-origin: 50% 40%;
+    transform-style: preserve-3d;
+  }
+
+  .book-3d-inner {
+    transform-style: preserve-3d;
+    position: relative;
+    /* transform applied inline by renderBook3D for dynamic angle */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .book-face {
+    position: absolute;
+    top: 0;
+    background-size: cover;
+    background-position: center;
+    backface-visibility: hidden;
+    overflow: hidden;
+  }
+
+  .book-face.front {
+    left: 0;
+    transform-origin: left center;
+    transform: rotateY(0deg) translateZ(0px);
+    /* Subtle highlight on the right edge (light catches the cover edge) */
+    box-shadow:
+      inset 1px 0 0 rgba(0,0,0,0.15),
+      inset -1px 0 0 rgba(255,255,255,0.08);
+  }
+
+  .book-face.spine {
+    transform-origin: right center;
+    background-size: cover;
+  }
+
+  .book-face.back {
+    background-size: cover;
+  }
+
+  /* Lighting overlay on top of cover/spine images */
+  .surface-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: normal;
+  }
+
+  /* Paper page edge (top/bottom of book) */
+  .page-edge {
+    background:
+      /* fine page lines */
+      repeating-linear-gradient(90deg,
+        rgba(0,0,0,0) 0px,
+        rgba(0,0,0,0) 1px,
+        rgba(0,0,0,0.06) 1px,
+        rgba(0,0,0,0.06) 2px,
+        rgba(0,0,0,0) 2px,
+        rgba(0,0,0,0) 3px),
+      /* base paper gradient */
+      linear-gradient(180deg, #faf7ed 0%, #ebe5d0 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.6),
+      inset 0 -1px 0 rgba(0,0,0,0.08);
+  }
+
+  /* Flat layout */
+  .book-flat {
+    display: flex;
+    align-items: stretch;
+    box-shadow:
+      0 4px 8px rgba(0,0,0,0.08),
+      0 24px 48px rgba(0,0,0,0.18);
+  }
+
+  .book-flat.no-shadow { box-shadow: none; }
+
+  .flat-piece {
+    background-size: cover;
+    background-position: center;
+    background-color: #ddd;
+  }
+
+  .flat-piece.placeholder {
+    background-color: #e0dcd0;
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.04) 8px, rgba(0,0,0,0.04) 9px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    writing-mode: horizontal-tb;
+  }
+
+  .flat-piece.placeholder.spine {
+    writing-mode: vertical-rl;
+    letter-spacing: 0.3em;
+  }
+
+  /* Specifications display */
+  .specs-bar {
+    border-top: 1px solid var(--rule);
+    padding: 12px 24px;
+    display: flex;
+    gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    flex-wrap: wrap;
+  }
+
+  .specs-bar strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .download-row {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 100;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast.error { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="title-block">
+      <h1>Book Mockup Studio</h1>
+      <div class="subtitle">동인 책 목업 생성기 · B6 / A5</div>
+    </div>
+    <div class="meta">
+      <div><span class="dot"></span>Print Preview Tool</div>
+      <div style="margin-top: 4px;">For Doujinshi Creators</div>
+    </div>
+  </header>
+
+  <div class="notice">
+    <span class="notice-mark">i</span>
+    <div class="notice-text">
+      <div>책날개가 포함된 통표지는 자동 분할이 지원되지 않습니다 — 분리 업로드 모드를 이용해 앞/뒤 표지만 잘라 올려주세요.</div>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <!-- Control Panel -->
+    <aside class="panel">
+
+      <div class="panel-section">
+        <div class="section-label">01 · 표지 업로드</div>
+
+        <div class="field">
+          <div class="radio-group" id="upload-mode-group">
+            <button class="radio-btn active" data-value="separate">분리 업로드</button>
+            <button class="radio-btn" data-value="combined">통표지 업로드</button>
+          </div>
+        </div>
+
+        <!-- Separate upload mode -->
+        <div id="separate-uploads">
+          <div class="upload-group">
+            <label class="upload-label">앞표지</label>
+            <div class="upload-input" id="front-input-wrap">
+              <input type="file" id="front-input" accept="image/*">
+              <span id="front-text">이미지 선택...</span>
+            </div>
+          </div>
+
+          <div class="upload-group" id="spine-upload-group">
+            <label class="upload-label">책등 (선택)</label>
+            <div class="upload-input" id="spine-input-wrap">
+              <input type="file" id="spine-input" accept="image/*">
+              <span id="spine-text">이미지 선택...</span>
+            </div>
+          </div>
+
+          <div class="upload-group">
+            <label class="upload-label">뒤표지 (선택)</label>
+            <div class="upload-input" id="back-input-wrap">
+              <input type="file" id="back-input" accept="image/*">
+              <span id="back-text">이미지 선택...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Combined upload mode -->
+        <div id="combined-uploads" style="display: none;">
+          <div class="upload-group">
+            <label class="upload-label">통표지 (뒤+책등+앞)</label>
+            <div class="upload-input" id="combined-input-wrap">
+              <input type="file" id="combined-input" accept="image/*">
+              <span id="combined-text">이미지 선택...</span>
+            </div>
+            <div class="hint-text">아래 책등 두께값으로 자동 분할됩니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">02 · 판형</div>
+        <div class="field">
+          <div class="radio-group" id="format-group">
+            <button class="radio-btn active" data-value="b6">B6 / 128×182</button>
+            <button class="radio-btn" data-value="a5">A5 / 148×210</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">책등 두께</label>
+          <div class="number-input">
+            <input type="number" id="spine-mm" value="8" min="0" max="50" step="0.5">
+            <span class="unit">mm</span>
+          </div>
+          <div class="hint-text" id="spine-hint">8mm</div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">03 · 배경</div>
+        <div class="field">
+          <div class="color-swatch-group" id="bg-group">
+            <div class="color-swatch active" data-color="#f4f1ea" style="background:#f4f1ea" title="크림"></div>
+            <div class="color-swatch" data-color="#ffffff" style="background:#ffffff" title="화이트"></div>
+            <div class="color-swatch" data-color="#1a1814" style="background:#1a1814" title="블랙"></div>
+            <div class="color-swatch" data-color="#2a3441" style="background:#2a3441" title="네이비"></div>
+            <div class="color-swatch" data-color="#8b3a2b" style="background:#8b3a2b" title="버건디"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">커스텀 컬러</label>
+          <div class="custom-color-row">
+            <input type="color" class="color-picker-large" id="custom-color" value="#cccccc">
+            <input type="text" class="hex-input" id="hex-input" value="#CCCCCC" maxlength="7">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">04 · 캡션 (선택)</div>
+        <div class="field">
+          <label class="field-label">제목 <span class="field-hint">— Enter로 줄바꿈</span></label>
+          <textarea class="text-input text-area" id="caption-title" placeholder="예: 이세계 레스토랑을 향유하라" maxlength="120" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label class="field-label">사양 / 부가 정보</label>
+          <input type="text" class="text-input" id="caption-meta" placeholder="예: B6 · 60p · 무선제본" maxlength="80">
+        </div>
+        <div class="field">
+          <label class="field-label">제목 폰트</label>
+          <div class="radio-group" id="caption-font-group">
+            <button class="radio-btn active" data-value="serif-en" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;text-transform:none;letter-spacing:0;">Serif</button>
+            <button class="radio-btn" data-value="serif-kr" style="font-family:'Noto Serif KR',serif;font-size:12px;text-transform:none;letter-spacing:0;">명조</button>
+            <button class="radio-btn" data-value="sans-kr" style="font-family:'Pretendard',sans-serif;font-size:12px;text-transform:none;letter-spacing:0;font-weight:600;">고딕</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">목업과의 간격 <span class="field-hint" id="caption-gap-display">56px</span></label>
+          <input type="range" class="range-input" id="caption-gap" min="0" max="160" value="56">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">05 · 효과</div>
+        <div class="field">
+          <div class="check-group">
+            <button class="check-btn active" id="shadow-toggle">그림자 ON</button>
+          </div>
+        </div>
+
+        <div class="field" id="angle-field">
+          <label class="field-label">각도 (3D)</label>
+          <input type="range" class="range-input" id="angle-input" min="-60" max="60" value="-32">
+        </div>
+      </div>
+
+      <div class="capture-hint">
+        <div class="capture-hint-label">저장하기</div>
+        <div class="capture-hint-text">미리보기 영역을 <strong>스크린샷</strong>으로 캡처해 사용해주세요.</div>
+      </div>
+
+    </aside>
+
+    <!-- Preview -->
+    <main class="preview-area">
+      <div class="preview-tabs">
+        <button class="tab-btn active" data-tab="3d">3D 입체</button>
+        <button class="tab-btn" data-tab="flat">평면 펼침</button>
+      </div>
+
+      <div class="preview-canvas" id="preview-canvas">
+        <div class="empty-state" id="empty-state">
+          <div class="icon">¶</div>
+          <div class="text">표지 이미지를 업로드하면<br>여기에 목업이 나타납니다</div>
+          <div class="hint">앞표지부터 시작</div>
+        </div>
+
+        <div class="stage-wrap" id="stage-wrap">
+          <div id="mockup-stage"></div>
+          <div class="caption-block" id="caption-block">
+            <div class="caption-title" id="display-title"></div>
+            <div class="caption-meta" id="display-meta"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="specs-bar">
+        <div>FORMAT · <strong id="spec-format">B6</strong></div>
+        <div>SIZE · <strong id="spec-size">128 × 182 mm</strong></div>
+        <div>SPINE · <strong id="spec-spine">8 mm</strong></div>
+        <div>VIEW · <strong id="spec-view">3D</strong></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ State ============
+const state = {
+  format: 'b6',
+  spineMm: 8,
+  bgColor: '#f4f1ea',
+  shadow: true,
+  view: '3d',
+  angle: -32,
+  uploadMode: 'separate',
+  images: { front: null, spine: null, back: null, combined: null },
+  caption: { title: '', meta: '', font: 'serif-en', gap: 56 }
+};
+
+const FORMATS = {
+  b6: { w: 128, h: 182, label: 'B6' },
+  a5: { w: 148, h: 210, label: 'A5' }
+};
+
+// Display scale: how many CSS pixels per mm
+// Larger = bigger preview = better screenshot quality
+const PX_PER_MM = 2.4;
+
+// ============ Utilities ============
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => resolve({ src: e.target.result, img });
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Crop a portion of an image and return as data URL + Image object
+function cropImageToDataURL(img, sx, sy, sw, sh) {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(sw));
+  c.height = Math.max(1, Math.round(sh));
+  const cx = c.getContext('2d');
+  cx.drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return c.toDataURL('image/png');
+}
+
+// Returns the image objects to use based on upload mode
+// In combined mode: dynamically slices the combined image based on format ratio + spine mm
+function getActiveImages() {
+  if (state.uploadMode === 'separate') {
+    return {
+      front: state.images.front,
+      spine: state.images.spine,
+      back: state.images.back
+    };
+  }
+
+  // Combined mode: split the uploaded image by computed ratios
+  const combined = state.images.combined;
+  if (!combined) return { front: null, spine: null, back: null };
+
+  const fmt = FORMATS[state.format];
+  const totalMm = fmt.w * 2 + state.spineMm;
+  const backRatio = fmt.w / totalMm;
+  const spineRatio = state.spineMm / totalMm;
+  const frontRatio = fmt.w / totalMm;
+
+  const imgW = combined.img.width;
+  const imgH = combined.img.height;
+
+  const backW = imgW * backRatio;
+  const spineW = imgW * spineRatio;
+  const frontW = imgW * frontRatio;
+
+  const backSrc = cropImageToDataURL(combined.img, 0, 0, backW, imgH);
+  const spineSrc = state.spineMm > 0
+    ? cropImageToDataURL(combined.img, backW, 0, spineW, imgH)
+    : null;
+  const frontSrc = cropImageToDataURL(combined.img, backW + spineW, 0, frontW, imgH);
+
+  // Wrap as image objects (the renderers only need .src, but for consistency we attach Image)
+  const wrap = (src) => {
+    if (!src) return null;
+    return { src, img: null }; // .img not needed by current renderers (they use background-image)
+  };
+
+  return {
+    front: wrap(frontSrc),
+    spine: wrap(spineSrc),
+    back: wrap(backSrc)
+  };
+}
+
+// ============ Upload handling ============
+function setupUpload(side) {
+  const input = document.getElementById(`${side}-input`);
+  const wrap = document.getElementById(`${side}-input-wrap`);
+  const text = document.getElementById(`${side}-text`);
+
+  input.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const { src, img } = await loadImageFromFile(file);
+      state.images[side] = { src, img, name: file.name };
+      wrap.classList.add('has-file');
+      text.textContent = file.name.length > 24 ? file.name.slice(0, 22) + '...' : file.name;
+      render();
+    } catch (err) {
+      showToast('이미지 로드 실패', true);
+    }
+  });
+}
+
+['front', 'spine', 'back', 'combined'].forEach(setupUpload);
+
+// Upload mode toggle
+document.getElementById('upload-mode-group').addEventListener('click', e => {
+  if (!e.target.classList.contains('radio-btn')) return;
+  document.querySelectorAll('#upload-mode-group .radio-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  state.uploadMode = e.target.dataset.value;
+
+  document.getElementById('separate-uploads').style.display =
+    state.uploadMode === 'separate' ? 'block' : 'none';
+  document.getElementById('combined-uploads').style.display =
+    state.uploadMode === 'combined' ? 'block' : 'none';
+
+  render();
+});
+
+// ============ Format toggle ============
+document.getElementById('format-group').addEventListener('click', e => {
+  if (!e.target.classList.contains('radio-btn')) return;
+  document.querySelectorAll('#format-group .radio-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  state.format = e.target.dataset.value;
+  render();
+});
+
+// ============ Spine mm ============
+const spineHint = document.getElementById('spine-hint');
+function updateSpineHint() {
+  if (state.spineMm === 0) {
+    spineHint.textContent = '0mm — 중철 모드';
+    spineHint.style.color = 'var(--accent)';
+  } else {
+    spineHint.textContent = `${state.spineMm}mm`;
+    spineHint.style.color = '';
+  }
+}
+document.getElementById('spine-mm').addEventListener('input', e => {
+  const v = parseFloat(e.target.value);
+  state.spineMm = isNaN(v) || v < 0 ? 0 : v;
+  updateSpineHint();
+  render();
+});
+
+// ============ Background color ============
+document.getElementById('bg-group').addEventListener('click', e => {
+  const sw = e.target.closest('.color-swatch');
+  if (!sw) return;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  sw.classList.add('active');
+  state.bgColor = sw.dataset.color;
+  render();
+});
+
+document.getElementById('custom-color').addEventListener('input', e => {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  state.bgColor = e.target.value;
+  document.getElementById('hex-input').value = e.target.value.toUpperCase();
+  render();
+});
+
+document.getElementById('hex-input').addEventListener('input', e => {
+  let v = e.target.value.trim();
+  if (!v.startsWith('#')) v = '#' + v;
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    state.bgColor = v;
+    document.getElementById('custom-color').value = v;
+    render();
+  }
+});
+
+// ============ Caption ============
+document.getElementById('caption-title').addEventListener('input', e => {
+  state.caption.title = e.target.value;
+  render();
+});
+document.getElementById('caption-meta').addEventListener('input', e => {
+  state.caption.meta = e.target.value;
+  render();
+});
+document.getElementById('caption-font-group').addEventListener('click', e => {
+  if (!e.target.classList.contains('radio-btn')) return;
+  document.querySelectorAll('#caption-font-group .radio-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  state.caption.font = e.target.dataset.value;
+  render();
+});
+
+document.getElementById('caption-gap').addEventListener('input', e => {
+  state.caption.gap = parseInt(e.target.value);
+  document.getElementById('caption-gap-display').textContent = state.caption.gap + 'px';
+  render();
+});
+
+// ============ Shadow toggle ============
+document.getElementById('shadow-toggle').addEventListener('click', e => {
+  state.shadow = !state.shadow;
+  e.target.classList.toggle('active', state.shadow);
+  e.target.textContent = state.shadow ? '그림자 ON' : '그림자 OFF';
+  render();
+});
+
+// ============ Angle ============
+document.getElementById('angle-input').addEventListener('input', e => {
+  state.angle = parseInt(e.target.value);
+  render();
+});
+
+// ============ Tabs ============
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.view = btn.dataset.tab;
+    document.getElementById('angle-field').style.display = state.view === '3d' ? 'block' : 'none';
+    render();
+  });
+});
+
+// ============ Render ============
+function render() {
+  const canvas = document.getElementById('preview-canvas');
+  const empty = document.getElementById('empty-state');
+  const stageWrap = document.getElementById('stage-wrap');
+  const stage = document.getElementById('mockup-stage');
+
+  // Update specs bar
+  const fmt = FORMATS[state.format];
+  document.getElementById('spec-format').textContent = fmt.label;
+  document.getElementById('spec-size').textContent = `${fmt.w} × ${fmt.h} mm`;
+  document.getElementById('spec-spine').textContent = state.spineMm === 0 ? '— (중철)' : `${state.spineMm} mm`;
+  document.getElementById('spec-view').textContent = state.view === '3d' ? '3D' : 'FLAT';
+
+  // Background of canvas
+  canvas.style.background = state.bgColor;
+
+  // Get the active images (resolves combined-mode auto-split)
+  const imgs = getActiveImages();
+
+  if (!imgs.front) {
+    empty.style.display = 'block';
+    stageWrap.classList.remove('active');
+    return;
+  }
+
+  empty.style.display = 'none';
+  stageWrap.classList.add('active');
+
+  // Update caption
+  const captionBlock = document.getElementById('caption-block');
+  const titleEl = document.getElementById('display-title');
+  const metaEl = document.getElementById('display-meta');
+  const hasCaption = state.caption.title.trim() || state.caption.meta.trim();
+  captionBlock.classList.toggle('active', !!hasCaption);
+
+  // Convert user's line breaks to <br> tags. We escape text first to prevent
+  // HTML injection from the title/meta input.
+  const escapeHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  titleEl.innerHTML = escapeHtml(state.caption.title).replace(/\n/g, '<br>');
+  metaEl.textContent = state.caption.meta;
+
+  // Apply font class
+  titleEl.className = 'caption-title font-' + state.caption.font;
+
+  // Apply caption gap
+  stageWrap.style.gap = state.caption.gap + 'px';
+
+  // Caption color adapts to background
+  if (isDark(state.bgColor)) {
+    titleEl.style.color = '#f4f1ea';
+    metaEl.style.color = 'rgba(244, 241, 234, 0.7)';
+  } else {
+    titleEl.style.color = '';
+    metaEl.style.color = '';
+  }
+
+  if (state.view === '3d') {
+    renderBook3D(stage, imgs);
+  } else {
+    renderBookFlat(stage, imgs);
+  }
+}
+
+// Helper: check if a hex color is dark
+function isDark(hex) {
+  if (!hex || !hex.startsWith('#')) return false;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+}
+
+function renderBook3D(stage, imgs) {
+  const fmt = FORMATS[state.format];
+  const w = fmt.w * PX_PER_MM;
+  const h = fmt.h * PX_PER_MM;
+  const spineW = state.spineMm * PX_PER_MM;
+  const isSaddleStitch = state.spineMm === 0;
+
+  const frontImg = imgs.front.src;
+  const spineImg = imgs.spine ? imgs.spine.src : null;
+  const backImg = imgs.back ? imgs.back.src : null;
+
+  // Multi-layer shadow for depth — sharper close shadow + soft ambient
+  const shadow = state.shadow
+    ? `filter:
+        drop-shadow(8px 12px 8px rgba(0,0,0,0.18))
+        drop-shadow(20px 30px 36px rgba(0,0,0,0.22))
+        drop-shadow(0 4px 6px rgba(0,0,0,0.12));`
+    : '';
+
+  // Compute angle-driven shading intensity
+  const angleRad = state.angle * Math.PI / 180;
+  const sinAbs = Math.abs(Math.sin(angleRad));
+  // The further rotated, the stronger the side shading
+  const sideShade = 0.15 + 0.25 * sinAbs;
+
+  // Front face overlay — gradient that simulates light hitting the cover.
+  // Light source assumed top-left. As angle rotates, the highlight position shifts.
+  // For negative angle (book rotates so spine appears on left), the right edge
+  // of the cover catches more light. We invert for positive angles.
+  const frontOverlay = state.angle < 0
+    ? `linear-gradient(105deg,
+         rgba(0,0,0,${sideShade * 0.7}) 0%,
+         rgba(0,0,0,${sideShade * 0.25}) 8%,
+         rgba(0,0,0,0) 25%,
+         rgba(255,255,255,0.06) 70%,
+         rgba(255,255,255,0.12) 100%)`
+    : `linear-gradient(255deg,
+         rgba(0,0,0,${sideShade * 0.7}) 0%,
+         rgba(0,0,0,${sideShade * 0.25}) 8%,
+         rgba(0,0,0,0) 25%,
+         rgba(255,255,255,0.06) 70%,
+         rgba(255,255,255,0.12) 100%)`;
+
+  // Saddle-stitch (0mm spine): single sheet, with overlay for surface feel
+  if (isSaddleStitch) {
+    stage.innerHTML = `
+      <div class="book-3d" style="${shadow}">
+        <div class="book-3d-inner" style="
+          width: ${w}px;
+          height: ${h}px;
+          transform: rotateY(${state.angle}deg) rotateX(2deg);
+        ">
+          <div class="book-face front" style="
+            width: ${w}px;
+            height: ${h}px;
+            background-image: url('${frontImg}');
+          ">
+            <div class="surface-overlay" style="background: ${frontOverlay};"></div>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Spine shading — direction depends on rotation
+  const spineOverlay = `linear-gradient(180deg,
+    rgba(255,255,255,0.08) 0%,
+    rgba(0,0,0,0) 20%,
+    rgba(0,0,0,0) 80%,
+    rgba(0,0,0,0.15) 100%)`;
+
+  stage.innerHTML = `
+    <div class="book-3d" style="${shadow}">
+      <div class="book-3d-inner" style="
+        width: ${w}px;
+        height: ${h}px;
+        transform: rotateY(${state.angle}deg) rotateX(2deg);
+      ">
+        <!-- Back face -->
+        <div class="book-face" style="
+          width: ${w}px;
+          height: ${h}px;
+          left: 0;
+          transform: translateZ(-${spineW}px);
+          ${backImg
+            ? `background-image: url('${backImg}');`
+            : `background: #d8d3c4; background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.05) 8px, rgba(0,0,0,0.05) 9px);`
+          }
+        "></div>
+
+        <!-- Spine -->
+        <div class="book-face" style="
+          width: ${spineW}px;
+          height: ${h}px;
+          left: 0;
+          transform: rotateY(-90deg) translateZ(0);
+          transform-origin: left center;
+          ${spineImg
+            ? `background-image: url('${spineImg}');`
+            : `background: #c4bfb0;`
+          }
+        ">
+          <div class="surface-overlay" style="background: ${spineOverlay};"></div>
+        </div>
+
+        <!-- Front face -->
+        <div class="book-face front" style="
+          width: ${w}px;
+          height: ${h}px;
+          background-image: url('${frontImg}');
+        ">
+          <div class="surface-overlay" style="background: ${frontOverlay};"></div>
+        </div>
+
+        <!-- Top edge (paper pages) -->
+        <div class="book-face page-edge" style="
+          width: ${w}px;
+          height: ${spineW}px;
+          left: 0;
+          top: 0;
+          transform: rotateX(90deg) translateZ(${spineW/2}px) translateY(-${spineW/2}px);
+          transform-origin: top center;
+        "></div>
+
+        <!-- Bottom edge -->
+        <div class="book-face page-edge" style="
+          width: ${w}px;
+          height: ${spineW}px;
+          left: 0;
+          bottom: 0;
+          transform: rotateX(-90deg) translateZ(${spineW/2}px) translateY(${spineW/2}px);
+          transform-origin: bottom center;
+        "></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderBookFlat(stage, imgs) {
+  const fmt = FORMATS[state.format];
+  const w = fmt.w * PX_PER_MM;
+  const h = fmt.h * PX_PER_MM;
+  const spineW = state.spineMm * PX_PER_MM;
+  const isSaddleStitch = state.spineMm === 0;
+
+  const frontImg = imgs.front?.src;
+  const spineImg = imgs.spine?.src;
+  const backImg = imgs.back?.src;
+
+  const backHtml = backImg
+    ? `<div class="flat-piece" style="width:${w}px;height:${h}px;background-image:url('${backImg}');"></div>`
+    : `<div class="flat-piece placeholder" style="width:${w}px;height:${h}px;">뒤표지</div>`;
+
+  const spineHtml = isSaddleStitch
+    ? ''
+    : (spineImg
+        ? `<div class="flat-piece" style="width:${spineW}px;height:${h}px;background-image:url('${spineImg}');"></div>`
+        : `<div class="flat-piece placeholder spine" style="width:${spineW}px;height:${h}px;">책등 ${state.spineMm}mm</div>`
+      );
+
+  const frontHtml = `<div class="flat-piece" style="width:${w}px;height:${h}px;background-image:url('${frontImg}');"></div>`;
+
+  stage.innerHTML = `
+    <div class="book-flat${state.shadow ? '' : ' no-shadow'}">
+      ${backHtml}${spineHtml}${frontHtml}
+    </div>
+  `;
+}
+
+// Initial render
+render();
+</script>
+
+</body>
+</html>
